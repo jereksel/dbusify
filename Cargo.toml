@@ -1,10 +1,12 @@
 [package]
 name = "dbusify"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Andrzej Ressel <jereksel@gmail.com>"]
 
 [dependencies]
 rspotify = { git = "https://github.com/jereksel/rspotify", rev = "3ddb1a01cb49cef985cd2dce8a4b6bee3f6ed40a" }
 itertools = "0.7.8"
 dbus = "0.6.2"
-dbusify_hyper = { path = "dbusify_hyper" }
+hyper = "0.12"
+futures = "0.1.21"
+webbrowser = "0.2.2"

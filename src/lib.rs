@@ -2,7 +2,8 @@ extern crate rspotify;
 extern crate itertools;
 extern crate dbus;
 extern crate core;
-extern crate dbusify_hyper;
+
+mod rspotify_hyper;
 
 pub mod mpris;
 
@@ -15,7 +16,7 @@ pub use rspotify::spotify::oauth2::SpotifyClientCredentials;
 use rspotify::spotify::client::Spotify;
 use std::sync::Arc;
 use std::sync::RwLock;
-use dbusify_hyper::get_token_hyper;
+use rspotify_hyper::get_token_hyper;
 use std::path::PathBuf;
 use std::env;
 use std::fs;

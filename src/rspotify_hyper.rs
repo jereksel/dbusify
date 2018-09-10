@@ -8,20 +8,18 @@ use rspotify::spotify::oauth2::SpotifyOAuth;
 use rspotify::spotify::oauth2::TokenInfo;
 use rspotify::spotify::util::generate_random_string;
 use std::io;
-use hyper::Request;
-use hyper::Response;
-use hyper::Body;
-use hyper::Server;
-use hyper::service::service_fn_ok;
 use std::thread;
 use std::net::Ipv4Addr;
-use futures::Stream;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::Sender;
-use futures::future::Future;
 use std::sync::Arc;
 use core::borrow::Borrow;
 use std::sync::Mutex;
+use self::hyper::service::service_fn_ok;
+use self::hyper::Server;
+use self::hyper::Body;
+use self::hyper::Response;
+use self::futures::future::Future;
 
 pub fn get_token_hyper(spotify_oauth: &mut SpotifyOAuth) -> Option<TokenInfo> {
     match spotify_oauth.get_cached_token() {
