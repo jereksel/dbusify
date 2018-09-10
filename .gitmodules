@@ -1,0 +1,3 @@
+[submodule "mpris/mpris-spec"]
+	path = mpris/mpris-spec
+	url = https://anongit.freedesktop.org/git/xdg/mpris-spec.git
