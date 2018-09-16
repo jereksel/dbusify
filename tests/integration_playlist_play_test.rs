@@ -3,7 +3,8 @@
 extern crate dbusify;
 extern crate rspotify;
 extern crate dbus;
-extern crate dbusify_hyper;
+extern crate dbusify;
+
 mod integration_tests_utils;
 
 use std::sync::atomic::Ordering;

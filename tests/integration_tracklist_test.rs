@@ -3,7 +3,6 @@
 extern crate dbusify;
 extern crate rspotify;
 extern crate dbus;
-extern crate dbusify_hyper;
 
 mod integration_tests_utils;
 

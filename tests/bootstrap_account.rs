@@ -1,5 +1,4 @@
 extern crate rspotify;
-extern crate dbusify_hyper;
 extern crate dbus;
 extern crate dbusify;
 

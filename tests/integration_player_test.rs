@@ -3,7 +3,6 @@
 extern crate dbusify;
 extern crate rspotify;
 extern crate dbus;
-extern crate dbusify_hyper;
 mod integration_tests_utils;
 
 use std::sync::atomic::Ordering;
@@ -26,7 +25,6 @@ use rspotify::spotify::senum::RepeatState::Context;
 use rspotify::spotify::senum::RepeatState::Track;
 use rspotify::spotify::senum::RepeatState::Off;
 use rspotify::spotify::senum::RepeatState;
-use dbusify_hyper::get_token_hyper;
 use integration_tests_utils::run_test_type;
 use dbusify::AccountType;
 

@@ -17,15 +17,17 @@ use std::time::Instant;
 use std::sync::Arc;
 use std::borrow::Borrow;
 
+use super::super::spotify_holder::SpotifyHolder;
+
 extern crate std;
 extern crate dbus;
 
-static mut SPOTIFY: Option<Arc<Spotify>> = None;
+static mut SPOTIFY: Option<SpotifyHolder> = None;
 
-fn get_spotify() -> &'static Spotify {
+fn get_spotify() -> Spotify {
     unsafe {
         match SPOTIFY {
-            Some(ref x) => x.borrow(),
+            Some(ref x) => x.get_spotify(),
             None => panic!(),
         }
     }
@@ -191,7 +193,7 @@ fn get_all_tracks_for_playlist(playlist: FullPlaylist) -> Result<Vec<SimplifiedT
 
     loop {
 
-        match spotify.user_playlist_tracks(&playlist.owner.id, &playlist.id, None, None, current_num, None) {
+        match spotify.user_playlist_tracks(&playlist.owner.id, &playlist.id, None, Some(100), current_num, None) {
             Ok(songs) => {
 
                 for song in songs.items {
@@ -239,7 +241,7 @@ fn full_to_simplified(track: FullTrack) -> SimplifiedTrack {
     }
 }
 
-pub fn get_interface(spotify: Arc<Spotify>, f: &dbus::tree::Factory<dbus::tree::MTFn<()>, ()>) -> dbus::tree::Interface<dbus::tree::MTFn, ()> {
+pub fn get_interface(spotify: SpotifyHolder, f: &dbus::tree::Factory<dbus::tree::MTFn<()>, ()>) -> dbus::tree::Interface<dbus::tree::MTFn, ()> {
     unsafe {
         SPOTIFY = Some(spotify);
     }

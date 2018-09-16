@@ -11,15 +11,17 @@ use std::sync::Arc;
 use std::borrow::Borrow;
 use std::time::Duration;
 
+use super::super::spotify_holder::SpotifyHolder;
+
 extern crate std;
 extern crate dbus;
 
-static mut SPOTIFY: Option<Arc<Spotify>> = None;
+static mut SPOTIFY: Option<SpotifyHolder> = None;
 
-fn get_spotify() -> &'static Spotify {
+fn get_spotify() -> Spotify {
     unsafe {
         match SPOTIFY {
-            Some(ref x) => x.borrow(),
+            Some(ref x) => x.get_spotify(),
             None => panic!(),
         }
     }
@@ -391,7 +393,7 @@ impl mpris::player::OrgMprisMediaPlayer2Player for () {
     }
 }
 
-pub fn get_interface(spotify: Arc<Spotify>, f: &dbus::tree::Factory<dbus::tree::MTFn<()>, ()>) -> dbus::tree::Interface<dbus::tree::MTFn, ()> {
+pub fn get_interface(spotify: SpotifyHolder, f: &dbus::tree::Factory<dbus::tree::MTFn<()>, ()>) -> dbus::tree::Interface<dbus::tree::MTFn, ()> {
     unsafe {
         SPOTIFY = Some(spotify);
     }

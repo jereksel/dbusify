@@ -1,14 +1,12 @@
 extern crate dbusify;
 extern crate rspotify;
 extern crate dbus;
-extern crate dbusify_hyper;
 
 use rspotify::spotify::client::Spotify;
 use dbus::ConnPath;
 use dbus::Connection;
 use std::panic;
 use rspotify::spotify::oauth2::SpotifyOAuth;
-use dbusify_hyper::get_token_hyper;
 use rspotify::spotify::oauth2::SpotifyClientCredentials;
 use std::sync::Arc;
 use std::thread;
@@ -18,6 +16,7 @@ use std::time::Duration;
 use dbus::BusType;
 use std::env;
 use dbusify::AccountType;
+use dbusify::rspotify_hyper::get_token_hyper;
 
 pub fn run_test_type<T>(_type: AccountType, test: T) -> ()
     where T: FnOnce(Spotify, ConnPath<&Connection>) -> () + panic::UnwindSafe
@@ -35,11 +34,9 @@ pub fn run_test_type<T>(_type: AccountType, test: T) -> ()
         .scope("playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private streaming ugc-image-upload user-follow-modify user-follow-read user-library-read user-library-modify user-read-private user-read-birthdate user-read-email user-top-read user-read-playback-state user-modify-playback-state user-read-currently-playing user-read-recently-played")
         .build();
 
-    let token_info = get_token_hyper(&mut oauth).unwrap();
+    let token_info = get_token_hyper(&mut (oauth.clone())).unwrap();
 
     let client_credential = SpotifyClientCredentials::default()
-//        .client_id(client_id.as_str())
-//        .client_secret(client_secret.as_str())
         .token_info(token_info)
         .build();
 
@@ -54,7 +51,7 @@ pub fn run_test_type<T>(_type: AccountType, test: T) -> ()
 
     let job = thread::spawn( move || {
 
-        let c = dbusify::get_connection(spotify2);
+        let c = dbusify::get_connection(oauth);
 
         let r = running2.clone();
 

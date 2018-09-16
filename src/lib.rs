@@ -3,11 +3,13 @@ extern crate itertools;
 extern crate dbus;
 extern crate core;
 
-mod rspotify_hyper;
+pub mod rspotify_hyper;
 
 pub mod mpris;
 
 pub mod mprisimpl;
+
+pub mod spotify_holder;
 
 use dbus::{Connection, BusType, NameFlag};
 
@@ -21,6 +23,7 @@ use std::path::PathBuf;
 use std::env;
 use std::fs;
 use std::env::home_dir;
+use spotify_holder::SpotifyHolder;
 
 pub fn run() {
 
@@ -36,7 +39,8 @@ pub fn run() {
         .scope("playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private streaming ugc-image-upload user-follow-modify user-follow-read user-library-read user-library-modify user-read-private user-read-birthdate user-read-email user-top-read user-read-playback-state user-modify-playback-state user-read-currently-playing user-read-recently-played")
         .build();
 
-    let spotify = match get_token_hyper(&mut oauth) {
+    //To open website one time
+    let spotify = match get_token_hyper(&mut oauth.clone()) {
         Some(token_info) => {
             let client_credential = SpotifyClientCredentials::default()
                 .token_info(token_info)
@@ -52,7 +56,7 @@ pub fn run() {
         },
     };
 
-    let c = get_connection(spotify);
+    let c = get_connection(oauth);
 
     // Serve other peers forever.
     loop { c.incoming(1000).next(); }
@@ -60,18 +64,20 @@ pub fn run() {
 }
 
 
-pub fn get_connection(spotify: Spotify) -> Connection {
+pub fn get_connection(spotify_o_auth: SpotifyOAuth) -> Connection {
 
     let c = Connection::get_private(BusType::Session).unwrap();
     c.register_name("org.mpris.MediaPlayer2.dbusify", NameFlag::ReplaceExisting as u32).unwrap();
 
     let f = dbus::tree::Factory::new_fn::<()>();
 
-    let arc = Arc::new(spotify.clone());
+    let arc = Arc::new(spotify_o_auth.clone());
 
-    let i1 = mprisimpl::player::get_interface(Arc::clone(&arc), &f);
-    let i2 = mprisimpl::playlist::get_interface(Arc::clone(&arc), &f);
-    let i3 = mprisimpl::tracklist::get_interface(Arc::clone(&arc), &f);
+    let holder = SpotifyHolder::new(spotify_o_auth);
+
+    let i1 = mprisimpl::player::get_interface(holder.clone(), &f);
+    let i2 = mprisimpl::playlist::get_interface(holder.clone(), &f);
+    let i3 = mprisimpl::tracklist::get_interface(holder.clone(), &f);
 
     let t = f.tree(()).add(f.object_path("/org/mpris/MediaPlayer2", ()).introspectable().add(i1).add(i2).add(i3));
 
