@@ -13,7 +13,7 @@ MPRIS2 client for Spotify Web API. Implements most of the MPRIS specification in
 2. Run `dbusify` with following environmental variables:
     - "CLIENT_ID" - client id of Spotify application
     - "CLIENT_SECRET" - client secret of Spotify application
-3. Web browser should open - login to your account and linked your account to application
+3. Web browser should open - login to your account and link your account to application
 4. Done - registered player name is `dbusify`
 
 ### Limitations
