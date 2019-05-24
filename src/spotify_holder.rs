@@ -6,8 +6,6 @@ use rspotify::spotify::oauth2::SpotifyClientCredentials;
 use rspotify_hyper::get_token_hyper;
 use std::sync::RwLock;
 use std::sync::Arc;
-use core::borrow::BorrowMut;
-use core::borrow::Borrow;
 
 #[derive(Clone, Debug)]
 pub struct SpotifyHolder {
@@ -27,8 +25,6 @@ impl SpotifyHolder {
         let mut a = self.oauth.write().unwrap();
 
         let oauth = &mut *a;
-
-//        let oauth: &mut rspotify::spotify::oauth2::SpotifyOAuth = &*self.oauth.write().unwrap();
 
         let spotify = match get_token_hyper(oauth) {
             Some(token_info) => {

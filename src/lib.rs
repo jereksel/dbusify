@@ -3,8 +3,8 @@ extern crate core;
 extern crate dbus;
 extern crate itertools;
 extern crate rspotify;
-
-pub mod rspotify_hyper;
+extern crate rspotify_hyper;
+extern crate dirs;
 
 pub mod mpris;
 
@@ -20,44 +20,15 @@ pub use rspotify::spotify::oauth2::SpotifyClientCredentials;
 use rspotify::spotify::oauth2::SpotifyOAuth;
 use rspotify_hyper::get_token_hyper;
 use spotify_holder::SpotifyHolder;
-use std::env;
-use std::env::home_dir;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::sync::RwLock;
 
 pub fn run() {
-    let home = home_dir().unwrap();
-    let settingsLocation = PathBuf::from(".config/dbusify/");
-
-    let path = home.join(settingsLocation).join("config.toml");
-
-    if !path.exists() {
-        println!("Config file {} does not exist", path.display());
-        std::process::exit(1);
-    }
-
-    let mut settings = Config::default();
-    settings.merge(File::from(path)).unwrap();
-
-    let client_id = match settings.get_str("CLIENT_ID") {
-        Ok(value) => value,
-        Err(value) => {
-            println!("{}", value);
-            std::process::exit(1);
-        }
-    };
-
-    let client_secret = match settings.get_str("CLIENT_SECRET") {
-        Ok(value) => value,
-        Err(value) => {
-            println!("{}", value);
-            std::process::exit(1);
-        }
-    };
 
     const REDIRECT_URL: &'static str = "http://localhost:8888/callback";
+
+    let (client_id, client_secret) = get_client();
 
     let oauth = SpotifyOAuth::default()
         .client_id(client_id.as_str())
@@ -89,6 +60,41 @@ pub fn run() {
     loop {
         c.incoming(1000).next();
     }
+}
+
+pub fn get_client() -> (String, String) {
+
+    let home = dirs::home_dir().unwrap();
+    let settings_location = PathBuf::from(".config/dbusify/");
+
+    let path = home.join(settings_location).join("config.toml");
+
+    if !path.exists() {
+        println!("Config file {} does not exist", path.display());
+        std::process::exit(1);
+    }
+
+    let mut settings = Config::default();
+    settings.merge(File::from(path)).unwrap();
+
+    let client_id = match settings.get_str("CLIENT_ID") {
+        Ok(value) => value,
+        Err(value) => {
+            println!("{}", value);
+            std::process::exit(1);
+        }
+    };
+
+    let client_secret = match settings.get_str("CLIENT_SECRET") {
+        Ok(value) => value,
+        Err(value) => {
+            println!("{}", value);
+            std::process::exit(1);
+        }
+    };
+
+    return (client_id, client_secret)
+
 }
 
 pub fn get_connection(spotify_o_auth: SpotifyOAuth) -> Connection {
@@ -139,7 +145,7 @@ impl AccountType {
             AccountType::Test => PathBuf::from(".spotify_token_cache_test.json"),
         };
 
-        let home = home_dir().unwrap();
+        let home = dirs::home_dir().unwrap();
         let settings = PathBuf::from(".config/dbusify/");
 
         let path = home.join(settings).join(file);

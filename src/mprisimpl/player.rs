@@ -5,11 +5,9 @@ use dbus::arg::Variant;
 use dbus::arg::RefArg;
 use std::collections::HashMap;
 use rspotify::spotify::client::Spotify;
-use std::thread;
 use rspotify::spotify::model::offset::for_uri;
-use std::sync::Arc;
-use std::borrow::Borrow;
 use std::time::Duration;
+use std::thread;
 
 use super::super::spotify_holder::SpotifyHolder;
 

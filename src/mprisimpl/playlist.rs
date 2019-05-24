@@ -4,8 +4,6 @@ use rspotify::spotify::client::Spotify;
 use rspotify::spotify::senum::Type;
 use rspotify::spotify::model::playlist::SimplifiedPlaylist;
 use std::cmp::min;
-use std::sync::Arc;
-use std::borrow::Borrow;
 use std::time::Instant;
 
 use super::super::spotify_holder::SpotifyHolder;

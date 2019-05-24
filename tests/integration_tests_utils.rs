@@ -1,6 +1,7 @@
 extern crate dbusify;
 extern crate rspotify;
 extern crate dbus;
+extern crate rspotify_hyper;
 
 use rspotify::spotify::client::Spotify;
 use dbus::ConnPath;
@@ -16,14 +17,14 @@ use std::time::Duration;
 use dbus::BusType;
 use std::env;
 use dbusify::AccountType;
-use dbusify::rspotify_hyper::get_token_hyper;
+use self::rspotify_hyper::get_token_hyper;
 
 pub fn run_test_type<T>(_type: AccountType, test: T) -> ()
     where T: FnOnce(Spotify, ConnPath<&Connection>) -> () + panic::UnwindSafe
 {
 
-    let client_id = env::var("CLIENT_ID").unwrap();
-    let client_secret = env::var("CLIENT_SECRET").unwrap();
+    let (client_id, client_secret) = dbusify::get_client();
+
     const REDIRECT_URL: &'static str = "http://localhost:8888/callback";
 
     let mut oauth = SpotifyOAuth::default()

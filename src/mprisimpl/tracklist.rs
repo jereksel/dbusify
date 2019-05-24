@@ -14,9 +14,6 @@ use rspotify::spotify::model::album::FullAlbum;
 use rspotify::spotify::model::track::SimplifiedTrack;
 use std::time::Instant;
 
-use std::sync::Arc;
-use std::borrow::Borrow;
-
 use super::super::spotify_holder::SpotifyHolder;
 
 extern crate std;
