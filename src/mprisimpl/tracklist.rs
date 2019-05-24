@@ -1,4 +1,4 @@
-use mpris;
+use crate::mpris;
 use dbus::tree::MethodErr;
 use dbus::arg::Variant;
 use dbus::arg::RefArg;
@@ -16,8 +16,8 @@ use std::time::Instant;
 
 use super::super::spotify_holder::SpotifyHolder;
 
-extern crate std;
-extern crate dbus;
+use std;
+use dbus;
 
 static mut SPOTIFY: Option<SpotifyHolder> = None;
 
@@ -33,7 +33,7 @@ fn get_spotify() -> Spotify {
 impl mpris::tracklist::OrgMprisMediaPlayer2TrackList for () {
     type Err = dbus::tree::MethodErr;
 
-    fn get_tracks_metadata(&self, track_ids: Vec<Path>) -> Result<Vec<::std::collections::HashMap<String, arg::Variant<Box<arg::RefArg>>>>, Self::Err> {
+    fn get_tracks_metadata(&self, track_ids: Vec<Path<'_>>) -> Result<Vec<::std::collections::HashMap<String, arg::Variant<Box<dyn arg::RefArg>>>>, Self::Err> {
         get_current_tracks()
             .map(|tracks| {
                 tracks.iter()
@@ -44,8 +44,8 @@ impl mpris::tracklist::OrgMprisMediaPlayer2TrackList for () {
                     .map(|track| {
                         let mut map = HashMap::new();
                         let name = track.name.clone();
-                        map.insert("mpris:trackid".to_string(), Variant(Box::new("/org/mpris/MediaPlayer2/Track/".to_string() + &track.id) as Box<RefArg>));
-                        map.insert("xesam:title".to_string(), Variant(Box::new(name) as Box<RefArg>));
+                        map.insert("mpris:trackid".to_string(), Variant(Box::new("/org/mpris/MediaPlayer2/Track/".to_string() + &track.id) as Box<dyn RefArg>));
+                        map.insert("xesam:title".to_string(), Variant(Box::new(name) as Box<dyn RefArg>));
                         map
                     })
                     .collect()
@@ -53,15 +53,15 @@ impl mpris::tracklist::OrgMprisMediaPlayer2TrackList for () {
             .map_err(|err| MethodErr::failed(&err.clone()))
     }
 
-    fn add_track(&self, _uri: &str, _after_track: Path, _set_as_current: bool) -> Result<(), Self::Err> {
+    fn add_track(&self, _uri: &str, _after_track: Path<'_>, _set_as_current: bool) -> Result<(), Self::Err> {
         Err(MethodErr::failed(&"adding track is not supported"))
     }
 
-    fn remove_track(&self, _track_id: Path) -> Result<(), Self::Err> {
+    fn remove_track(&self, _track_id: Path<'_>) -> Result<(), Self::Err> {
         Err(MethodErr::failed(&"removing track is not supported"))
     }
 
-    fn go_to(&self, track_id: Path) -> Result<(), Self::Err> {
+    fn go_to(&self, track_id: Path<'_>) -> Result<(), Self::Err> {
 
         let start = "/org/mpris/MediaPlayer2/Track/";
 
@@ -122,7 +122,7 @@ fn get_current_tracks() -> Result<Vec<SimplifiedTrack>, String> {
 
                     let d: Vec<&str> = context.uri.split(':').collect();
 
-                    let id = (d[2]).to_string();
+                    let _id = (d[2]).to_string();
 
                     get_spotify().album(&context.uri)
                         .map_err(|err| err.to_string())
@@ -150,7 +150,7 @@ fn get_all_tracks_for_album(album: FullAlbum) -> Result<Vec<SimplifiedTrack>, St
     let mut current_num = 0;
 
     let spotify = get_spotify();
-    let step = 2;
+    let _step = 2;
 
     loop {
 
@@ -184,7 +184,7 @@ fn get_all_tracks_for_playlist(playlist: FullPlaylist) -> Result<Vec<SimplifiedT
     let mut current_num = 0;
 
     let spotify = get_spotify();
-    let step = 2;
+    let _step = 2;
 
     let start = Instant::now();
 

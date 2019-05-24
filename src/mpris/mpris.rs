@@ -2,7 +2,7 @@
 
 #![allow(dead_code)]
 use dbus as dbus;
-use dbus::arg;
+
 use dbus::tree;
 
 pub trait OrgMprisMediaPlayer2 {
@@ -85,12 +85,12 @@ where
     D::Method: Default,
     D::Property: Default,
     T: OrgMprisMediaPlayer2<Err=tree::MethodErr>,
-    F: 'static + for <'z> Fn(& 'z tree::MethodInfo<tree::MTFn<D>, D>) -> & 'z T,
+    F: 'static + for <'z> Fn(& 'z tree::MethodInfo<'_, tree::MTFn<D>, D>) -> & 'z T,
 {
     let i = factory.interface("org.mpris.MediaPlayer2", data);
     let f = ::std::sync::Arc::new(f);
     let fclone = f.clone();
-    let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
+    let h = move |minfo: &tree::MethodInfo<'_, tree::MTFn<D>, D>| {
         let d = fclone(minfo);
         d.raise()?;
         let rm = minfo.msg.method_return();
@@ -100,7 +100,7 @@ where
     let i = i.add_m(m);
 
     let fclone = f.clone();
-    let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
+    let h = move |minfo: &tree::MethodInfo<'_, tree::MTFn<D>, D>| {
         let d = fclone(minfo);
         d.quit()?;
         let rm = minfo.msg.method_return();

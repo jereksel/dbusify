@@ -1,4 +1,4 @@
-extern crate rspotify;
+use rspotify;
 
 use rspotify::spotify::oauth2::SpotifyOAuth;
 use rspotify::spotify::client::Spotify;

@@ -1,14 +1,11 @@
-extern crate rspotify;
-extern crate dbus;
-extern crate dbusify;
+use rspotify;
+use dbus;
+use dbusify;
 
 mod integration_tests_utils;
 
-use std::path::PathBuf;
-use rspotify::spotify::oauth2::SpotifyOAuth;
-use rspotify::spotify::oauth2::SpotifyClientCredentials;
 use rspotify::spotify::client::Spotify;
-use integration_tests_utils::run_test_type;
+use crate::integration_tests_utils::run_test_type;
 use dbus::ConnPath;
 use dbusify::AccountType;
 use dbus::Connection;
@@ -19,7 +16,7 @@ use std::panic;
 #[ignore]
 fn bootstrap() {
 
-    run_test(|spotify, connection| {
+    run_test(|spotify, _connection| {
 
         let user_id = spotify.me().unwrap().id;
 
@@ -102,7 +99,7 @@ fn bootstrap() {
 }
 
 fn run_test<T>(test: T) -> ()
-    where T: FnOnce(Spotify, ConnPath<&Connection>) -> () + panic::UnwindSafe
+    where T: FnOnce(Spotify, ConnPath<'_, &Connection>) -> () + panic::UnwindSafe
 {
     run_test_type(AccountType::Test, test);
 }

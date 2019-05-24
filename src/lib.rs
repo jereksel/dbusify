@@ -1,15 +1,8 @@
-extern crate config;
-extern crate core;
-extern crate dbus;
-extern crate itertools;
-extern crate rspotify;
-extern crate rspotify_hyper;
-extern crate dirs;
+use dbus;
+use dirs;
 
 pub mod mpris;
-
 pub mod mprisimpl;
-
 pub mod spotify_holder;
 
 use dbus::{BusType, Connection, NameFlag};
@@ -19,7 +12,7 @@ use rspotify::spotify::client::Spotify;
 pub use rspotify::spotify::oauth2::SpotifyClientCredentials;
 use rspotify::spotify::oauth2::SpotifyOAuth;
 use rspotify_hyper::get_token_hyper;
-use spotify_holder::SpotifyHolder;
+use crate::spotify_holder::SpotifyHolder;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -39,7 +32,7 @@ pub fn run() {
         .build();
 
     //To open website one time
-    let spotify = match get_token_hyper(&mut oauth.clone()) {
+    let _spotify = match get_token_hyper(&mut oauth.clone()) {
         Some(token_info) => {
             let client_credential = SpotifyClientCredentials::default()
                 .token_info(token_info)
@@ -107,7 +100,7 @@ pub fn get_connection(spotify_o_auth: SpotifyOAuth) -> Connection {
 
     let f = dbus::tree::Factory::new_fn::<()>();
 
-    let arc = Arc::new(spotify_o_auth.clone());
+    let _arc = Arc::new(spotify_o_auth.clone());
 
     let holder = SpotifyHolder::new(spotify_o_auth);
 

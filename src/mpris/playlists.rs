@@ -7,7 +7,7 @@ use dbus::tree;
 
 pub trait OrgMprisMediaPlayer2Playlists {
     type Err;
-    fn activate_playlist(&self, playlist_id: dbus::Path) -> Result<(), Self::Err>;
+    fn activate_playlist(&self, playlist_id: dbus::Path<'_>) -> Result<(), Self::Err>;
     fn get_playlists(&self, index: u32, max_count: u32, order: &str, reverse_order: bool) -> Result<Vec<(dbus::Path<'static>, String, String)>, Self::Err>;
     fn get_playlist_count(&self) -> Result<u32, Self::Err>;
     fn get_orderings(&self) -> Result<Vec<String>, Self::Err>;
@@ -17,7 +17,7 @@ pub trait OrgMprisMediaPlayer2Playlists {
 impl<'a, C: ::std::ops::Deref<Target=dbus::Connection>> OrgMprisMediaPlayer2Playlists for dbus::ConnPath<'a, C> {
     type Err = dbus::Error;
 
-    fn activate_playlist(&self, playlist_id: dbus::Path) -> Result<(), Self::Err> {
+    fn activate_playlist(&self, playlist_id: dbus::Path<'_>) -> Result<(), Self::Err> {
         let mut m = self.method_call_with_args(&"org.mpris.MediaPlayer2.Playlists".into(), &"ActivatePlaylist".into(), |msg| {
             let mut i = arg::IterAppend::new(msg);
             i.append(playlist_id);
@@ -60,14 +60,14 @@ where
     D::Property: Default,
     D::Signal: Default,
     T: OrgMprisMediaPlayer2Playlists<Err=tree::MethodErr>,
-    F: 'static + for <'z> Fn(& 'z tree::MethodInfo<tree::MTFn<D>, D>) -> & 'z T,
+    F: 'static + for <'z> Fn(& 'z tree::MethodInfo<'_, tree::MTFn<D>, D>) -> & 'z T,
 {
     let i = factory.interface("org.mpris.MediaPlayer2.Playlists", data);
     let f = ::std::sync::Arc::new(f);
     let fclone = f.clone();
-    let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
+    let h = move |minfo: &tree::MethodInfo<'_, tree::MTFn<D>, D>| {
         let mut i = minfo.msg.iter_init();
-        let playlist_id: dbus::Path = i.read()?;
+        let playlist_id: dbus::Path<'_> = i.read()?;
         let d = fclone(minfo);
         d.activate_playlist(playlist_id)?;
         let rm = minfo.msg.method_return();
@@ -78,7 +78,7 @@ where
     let i = i.add_m(m);
 
     let fclone = f.clone();
-    let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
+    let h = move |minfo: &tree::MethodInfo<'_, tree::MTFn<D>, D>| {
         let mut i = minfo.msg.iter_init();
         let index: u32 = i.read()?;
         let max_count: u32 = i.read()?;
@@ -120,7 +120,7 @@ where
     });
     let i = i.add_p(p);
 
-    let p = factory.property::<(bool, (dbus::Path, &str, &str)), _>("ActivePlaylist", Default::default());
+    let p = factory.property::<(bool, (dbus::Path<'_>, &str, &str)), _>("ActivePlaylist", Default::default());
     let p = p.access(tree::Access::Read);
     let fclone = f.clone();
     let p = p.on_get(move |a, pinfo| {
@@ -144,10 +144,10 @@ pub struct OrgMprisMediaPlayer2PlaylistsPlaylistChanged {
 impl dbus::SignalArgs for OrgMprisMediaPlayer2PlaylistsPlaylistChanged {
     const NAME: &'static str = "PlaylistChanged";
     const INTERFACE: &'static str = "org.mpris.MediaPlayer2.Playlists";
-    fn append(&self, i: &mut arg::IterAppend) {
+    fn append(&self, i: &mut arg::IterAppend<'_>) {
         arg::RefArg::append(&self.playlist, i);
     }
-    fn get(&mut self, i: &mut arg::Iter) -> Result<(), arg::TypeMismatchError> {
+    fn get(&mut self, i: &mut arg::Iter<'_>) -> Result<(), arg::TypeMismatchError> {
         self.playlist = i.read()?;
         Ok(())
     }

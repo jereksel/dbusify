@@ -1,27 +1,20 @@
-extern crate dbusify;
-extern crate rspotify;
-extern crate dbus;
+use dbusify;
+use rspotify;
+use dbus;
 
 mod integration_tests_utils;
 
-use std::sync::atomic::Ordering;
 use rspotify::spotify::client::Spotify;
 use std::panic;
-use rspotify::spotify::oauth2::SpotifyOAuth;
-use rspotify::spotify::util::get_token;
-use rspotify::spotify::oauth2::SpotifyClientCredentials;
-use std::sync::Arc;
 use std::thread;
-use std::sync::atomic::AtomicBool;
 use dbus::Connection;
-use dbus::BusType;
 use dbus::ConnPath;
 use dbusify::mpris::tracklist::OrgMprisMediaPlayer2TrackList;
 use std::time::Duration;
 use rspotify::spotify::model::offset::for_position;
 use dbus::arg::RefArg;
 use dbusify::AccountType;
-use integration_tests_utils::run_test_type;
+use crate::integration_tests_utils::run_test_type;
 
 #[test]
 fn get_tracks_playlist() {
@@ -144,7 +137,7 @@ fn go_to() {
 }
 
 fn run_test<T>(test: T) -> ()
-    where T: FnOnce(Spotify, ConnPath<&Connection>) -> () + panic::UnwindSafe
+    where T: FnOnce(Spotify, ConnPath<'_, &Connection>) -> () + panic::UnwindSafe
 {
     run_test_type(AccountType::Main, test);
 }

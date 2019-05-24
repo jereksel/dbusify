@@ -14,7 +14,7 @@ pub trait OrgMprisMediaPlayer2Player {
     fn stop(&self) -> Result<(), Self::Err>;
     fn play(&self) -> Result<(), Self::Err>;
     fn seek(&self, offset: i64) -> Result<(), Self::Err>;
-    fn set_position(&self, track_id: dbus::Path, position: i64) -> Result<(), Self::Err>;
+    fn set_position(&self, track_id: dbus::Path<'_>, position: i64) -> Result<(), Self::Err>;
     fn open_uri(&self, uri: &str) -> Result<(), Self::Err>;
     fn get_playback_status(&self) -> Result<String, Self::Err>;
     fn get_loop_status(&self) -> Result<String, Self::Err>;
@@ -23,7 +23,7 @@ pub trait OrgMprisMediaPlayer2Player {
     fn set_rate(&self, value: f64) -> Result<(), Self::Err>;
     fn get_shuffle(&self) -> Result<bool, Self::Err>;
     fn set_shuffle(&self, value: bool) -> Result<(), Self::Err>;
-    fn get_metadata(&self) -> Result<::std::collections::HashMap<String, arg::Variant<Box<arg::RefArg + 'static>>>, Self::Err>;
+    fn get_metadata(&self) -> Result<::std::collections::HashMap<String, arg::Variant<Box<dyn arg::RefArg + 'static>>>, Self::Err>;
     fn get_volume(&self) -> Result<f64, Self::Err>;
     fn set_volume(&self, value: f64) -> Result<(), Self::Err>;
     fn get_position(&self) -> Result<i64, Self::Err>;
@@ -91,7 +91,7 @@ impl<'a, C: ::std::ops::Deref<Target=dbus::Connection>> OrgMprisMediaPlayer2Play
         Ok(())
     }
 
-    fn set_position(&self, track_id: dbus::Path, position: i64) -> Result<(), Self::Err> {
+    fn set_position(&self, track_id: dbus::Path<'_>, position: i64) -> Result<(), Self::Err> {
         let mut m = self.method_call_with_args(&"org.mpris.MediaPlayer2.Player".into(), &"SetPosition".into(), |msg| {
             let mut i = arg::IterAppend::new(msg);
             i.append(track_id);
@@ -126,7 +126,7 @@ impl<'a, C: ::std::ops::Deref<Target=dbus::Connection>> OrgMprisMediaPlayer2Play
         <Self as dbus::stdintf::org_freedesktop_dbus::Properties>::get(&self, "org.mpris.MediaPlayer2.Player", "Shuffle")
     }
 
-    fn get_metadata(&self) -> Result<::std::collections::HashMap<String, arg::Variant<Box<arg::RefArg + 'static>>>, Self::Err> {
+    fn get_metadata(&self) -> Result<::std::collections::HashMap<String, arg::Variant<Box<dyn arg::RefArg + 'static>>>, Self::Err> {
         <Self as dbus::stdintf::org_freedesktop_dbus::Properties>::get(&self, "org.mpris.MediaPlayer2.Player", "Metadata")
     }
 
@@ -194,12 +194,12 @@ where
     D::Property: Default,
     D::Signal: Default,
     T: OrgMprisMediaPlayer2Player<Err=tree::MethodErr>,
-    F: 'static + for <'z> Fn(& 'z tree::MethodInfo<tree::MTFn<D>, D>) -> & 'z T,
+    F: 'static + for <'z> Fn(& 'z tree::MethodInfo<'_, tree::MTFn<D>, D>) -> & 'z T,
 {
     let i = factory.interface("org.mpris.MediaPlayer2.Player", data);
     let f = ::std::sync::Arc::new(f);
     let fclone = f.clone();
-    let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
+    let h = move |minfo: &tree::MethodInfo<'_, tree::MTFn<D>, D>| {
         let d = fclone(minfo);
         d.next()?;
         let rm = minfo.msg.method_return();
@@ -209,7 +209,7 @@ where
     let i = i.add_m(m);
 
     let fclone = f.clone();
-    let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
+    let h = move |minfo: &tree::MethodInfo<'_, tree::MTFn<D>, D>| {
         let d = fclone(minfo);
         d.previous()?;
         let rm = minfo.msg.method_return();
@@ -219,7 +219,7 @@ where
     let i = i.add_m(m);
 
     let fclone = f.clone();
-    let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
+    let h = move |minfo: &tree::MethodInfo<'_, tree::MTFn<D>, D>| {
         let d = fclone(minfo);
         d.pause()?;
         let rm = minfo.msg.method_return();
@@ -229,7 +229,7 @@ where
     let i = i.add_m(m);
 
     let fclone = f.clone();
-    let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
+    let h = move |minfo: &tree::MethodInfo<'_, tree::MTFn<D>, D>| {
         let d = fclone(minfo);
         d.play_pause()?;
         let rm = minfo.msg.method_return();
@@ -239,7 +239,7 @@ where
     let i = i.add_m(m);
 
     let fclone = f.clone();
-    let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
+    let h = move |minfo: &tree::MethodInfo<'_, tree::MTFn<D>, D>| {
         let d = fclone(minfo);
         d.stop()?;
         let rm = minfo.msg.method_return();
@@ -249,7 +249,7 @@ where
     let i = i.add_m(m);
 
     let fclone = f.clone();
-    let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
+    let h = move |minfo: &tree::MethodInfo<'_, tree::MTFn<D>, D>| {
         let d = fclone(minfo);
         d.play()?;
         let rm = minfo.msg.method_return();
@@ -259,7 +259,7 @@ where
     let i = i.add_m(m);
 
     let fclone = f.clone();
-    let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
+    let h = move |minfo: &tree::MethodInfo<'_, tree::MTFn<D>, D>| {
         let mut i = minfo.msg.iter_init();
         let offset: i64 = i.read()?;
         let d = fclone(minfo);
@@ -272,9 +272,9 @@ where
     let i = i.add_m(m);
 
     let fclone = f.clone();
-    let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
+    let h = move |minfo: &tree::MethodInfo<'_, tree::MTFn<D>, D>| {
         let mut i = minfo.msg.iter_init();
-        let track_id: dbus::Path = i.read()?;
+        let track_id: dbus::Path<'_> = i.read()?;
         let position: i64 = i.read()?;
         let d = fclone(minfo);
         d.set_position(track_id, position)?;
@@ -287,7 +287,7 @@ where
     let i = i.add_m(m);
 
     let fclone = f.clone();
-    let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
+    let h = move |minfo: &tree::MethodInfo<'_, tree::MTFn<D>, D>| {
         let mut i = minfo.msg.iter_init();
         let uri: &str = i.read()?;
         let d = fclone(minfo);
@@ -364,7 +364,7 @@ where
     });
     let i = i.add_p(p);
 
-    let p = factory.property::<::std::collections::HashMap<&str, arg::Variant<Box<arg::RefArg>>>, _>("Metadata", Default::default());
+    let p = factory.property::<::std::collections::HashMap<&str, arg::Variant<Box<dyn arg::RefArg>>>, _>("Metadata", Default::default());
     let p = p.access(tree::Access::Read);
     let fclone = f.clone();
     let p = p.on_get(move |a, pinfo| {
@@ -505,10 +505,10 @@ pub struct OrgMprisMediaPlayer2PlayerSeeked {
 impl dbus::SignalArgs for OrgMprisMediaPlayer2PlayerSeeked {
     const NAME: &'static str = "Seeked";
     const INTERFACE: &'static str = "org.mpris.MediaPlayer2.Player";
-    fn append(&self, i: &mut arg::IterAppend) {
+    fn append(&self, i: &mut arg::IterAppend<'_>) {
         arg::RefArg::append(&self.position, i);
     }
-    fn get(&mut self, i: &mut arg::Iter) -> Result<(), arg::TypeMismatchError> {
+    fn get(&mut self, i: &mut arg::Iter<'_>) -> Result<(), arg::TypeMismatchError> {
         self.position = i.read()?;
         Ok(())
     }

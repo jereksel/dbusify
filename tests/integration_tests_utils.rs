@@ -1,7 +1,7 @@
-extern crate dbusify;
-extern crate rspotify;
-extern crate dbus;
-extern crate rspotify_hyper;
+use dbusify;
+use rspotify;
+use dbus;
+use rspotify_hyper;
 
 use rspotify::spotify::client::Spotify;
 use dbus::ConnPath;
@@ -15,19 +15,19 @@ use std::sync::atomic::Ordering;
 use std::sync::atomic::AtomicBool;
 use std::time::Duration;
 use dbus::BusType;
-use std::env;
+
 use dbusify::AccountType;
 use self::rspotify_hyper::get_token_hyper;
 
 pub fn run_test_type<T>(_type: AccountType, test: T) -> ()
-    where T: FnOnce(Spotify, ConnPath<&Connection>) -> () + panic::UnwindSafe
+    where T: FnOnce(Spotify, ConnPath<'_, &Connection>) -> () + panic::UnwindSafe
 {
 
     let (client_id, client_secret) = dbusify::get_client();
 
     const REDIRECT_URL: &'static str = "http://localhost:8888/callback";
 
-    let mut oauth = SpotifyOAuth::default()
+    let oauth = SpotifyOAuth::default()
         .client_id(client_id.as_str())
         .client_secret(client_secret.as_str())
         .redirect_uri(REDIRECT_URL)
@@ -45,7 +45,7 @@ pub fn run_test_type<T>(_type: AccountType, test: T) -> ()
         .client_credentials_manager(client_credential)
         .build();
 
-    let spotify2 = spotify.clone();
+    let _spotify2 = spotify.clone();
 
     let running = Arc::new(AtomicBool::new(false));
     let running2 = running.clone();

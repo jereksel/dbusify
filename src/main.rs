@@ -1,4 +1,4 @@
-extern crate dbusify;
+use dbusify;
 
 fn main() {
     dbusify::run()

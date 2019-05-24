@@ -1,4 +1,4 @@
-use mpris;
+use crate::mpris;
 use dbus::tree::MethodErr;
 use rspotify::spotify::client::Spotify;
 use rspotify::spotify::senum::Type;
@@ -8,8 +8,8 @@ use std::time::Instant;
 
 use super::super::spotify_holder::SpotifyHolder;
 
-extern crate std;
-extern crate dbus;
+use std;
+use dbus;
 
 static mut SPOTIFY: Option<SpotifyHolder> = None;
 
@@ -36,12 +36,6 @@ impl Ordering {
             _ => None,
         }
     }
-    pub fn as_str(&self) -> &str {
-        match *self {
-            Ordering::Alphabetical => "Alphabetical",
-            Ordering::UserDefined => "UserDefined"
-        }
-    }
 }
 
 type Playlist = (dbus::Path<'static>, String, String);
@@ -49,12 +43,12 @@ type Playlist = (dbus::Path<'static>, String, String);
 impl mpris::playlists::OrgMprisMediaPlayer2Playlists for () {
     type Err = dbus::tree::MethodErr;
 
-    fn activate_playlist(&self, playlist_id: dbus::Path) -> Result<(), Self::Err> {
+    fn activate_playlist(&self, playlist_id: dbus::Path<'_>) -> Result<(), Self::Err> {
 
         let start = "/org/mpris/MediaPlayer2/Playlist/";
 
         let playlist = playlist_id.to_string()[start.len()..].to_string();
-        let uri = "spotify:playlist:".to_string() + &playlist;
+        let _uri = "spotify:playlist:".to_string() + &playlist;
 
         get_spotify().playlist(&playlist, None, None)
             .and_then(|playlist| get_spotify().start_playback(None, Some(playlist.uri), None, None))
@@ -182,7 +176,7 @@ pub fn get_all_playlists() -> Result<Vec<SimplifiedPlaylist>, String> {
     let mut current_num = 0;
 
     let spotify = get_spotify();
-    let step = 2;
+    let _step = 2;
 
     let start = Instant::now();
 

@@ -1,4 +1,4 @@
-use mpris;
+use crate::mpris;
 use dbus::tree::MethodErr;
 use rspotify::spotify::senum::RepeatState;
 use dbus::arg::Variant;
@@ -11,8 +11,8 @@ use std::thread;
 
 use super::super::spotify_holder::SpotifyHolder;
 
-extern crate std;
-extern crate dbus;
+use std;
+use dbus;
 
 static mut SPOTIFY: Option<SpotifyHolder> = None;
 
@@ -131,7 +131,7 @@ impl mpris::player::OrgMprisMediaPlayer2Player for () {
         }
     }
 
-    fn set_position(&self, track_id: dbus::Path, position: i64) -> Result<(), <Self as mpris::player::OrgMprisMediaPlayer2Player>::Err> {
+    fn set_position(&self, track_id: dbus::Path<'_>, position: i64) -> Result<(), <Self as mpris::player::OrgMprisMediaPlayer2Player>::Err> {
 
         match get_spotify().current_playing(None) {
             Ok(result) => {
@@ -271,7 +271,7 @@ impl mpris::player::OrgMprisMediaPlayer2Player for () {
         return get_spotify().shuffle(value, None).map_err(|err| MethodErr::failed(&err.to_string()));
     }
 
-    fn get_metadata(&self) -> Result<HashMap<String, Variant<Box<RefArg>>>, Self::Err> {
+    fn get_metadata(&self) -> Result<HashMap<String, Variant<Box<dyn RefArg>>>, Self::Err> {
         match get_spotify().current_playing(None) {
             Ok(result) => {
                 match result {
@@ -280,8 +280,8 @@ impl mpris::player::OrgMprisMediaPlayer2Player for () {
                             Some(song) => {
                                 let name = song.name.clone();
                                 let mut map = HashMap::new();
-                                map.insert("mpris:trackid".to_string(), Variant(Box::new("/org/mpris/MediaPlayer2/Track/".to_string() + &song.id) as Box<RefArg>));
-                                map.insert("xesam:title".to_string(), Variant(Box::new(name) as Box<RefArg>));
+                                map.insert("mpris:trackid".to_string(), Variant(Box::new("/org/mpris/MediaPlayer2/Track/".to_string() + &song.id) as Box<dyn RefArg>));
+                                map.insert("xesam:title".to_string(), Variant(Box::new(name) as Box<dyn RefArg>));
                                 Ok(map)
                             }
 
