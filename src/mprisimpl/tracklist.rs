@@ -117,7 +117,7 @@ fn get_current_tracks() -> Result<Vec<SimplifiedTrack>, String> {
                     // https://developer.spotify.com/community/news/2018/06/12/changes-to-playlist-uris/
                     let id = (d[4]).to_string();
 
-                    get_spotify().playlist(&id, None)
+                    get_spotify().playlist(&id, None, None)
                         .map_err(|err| err.to_string())
                         .and_then(|playlist| get_all_tracks_for_playlist(playlist))
                 },

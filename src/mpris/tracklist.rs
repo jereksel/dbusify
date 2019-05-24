@@ -7,7 +7,7 @@ use dbus::tree;
 
 pub trait OrgMprisMediaPlayer2TrackList {
     type Err;
-    fn get_tracks_metadata(&self, track_ids: Vec<dbus::Path>) -> Result<Vec<::std::collections::HashMap<String, arg::Variant<Box<arg::RefArg>>>>, Self::Err>;
+    fn get_tracks_metadata(&self, track_ids: Vec<dbus::Path>) -> Result<Vec<::std::collections::HashMap<String, arg::Variant<Box<arg::RefArg + 'static>>>>, Self::Err>;
     fn add_track(&self, uri: &str, after_track: dbus::Path, set_as_current: bool) -> Result<(), Self::Err>;
     fn remove_track(&self, track_id: dbus::Path) -> Result<(), Self::Err>;
     fn go_to(&self, track_id: dbus::Path) -> Result<(), Self::Err>;
@@ -18,43 +18,43 @@ pub trait OrgMprisMediaPlayer2TrackList {
 impl<'a, C: ::std::ops::Deref<Target=dbus::Connection>> OrgMprisMediaPlayer2TrackList for dbus::ConnPath<'a, C> {
     type Err = dbus::Error;
 
-    fn get_tracks_metadata(&self, track_ids: Vec<dbus::Path>) -> Result<Vec<::std::collections::HashMap<String, arg::Variant<Box<arg::RefArg>>>>, Self::Err> {
-        let mut m = try!(self.method_call_with_args(&"org.mpris.MediaPlayer2.TrackList".into(), &"GetTracksMetadata".into(), |msg| {
+    fn get_tracks_metadata(&self, track_ids: Vec<dbus::Path>) -> Result<Vec<::std::collections::HashMap<String, arg::Variant<Box<arg::RefArg + 'static>>>>, Self::Err> {
+        let mut m = self.method_call_with_args(&"org.mpris.MediaPlayer2.TrackList".into(), &"GetTracksMetadata".into(), |msg| {
             let mut i = arg::IterAppend::new(msg);
             i.append(track_ids);
-        }));
-        try!(m.as_result());
+        })?;
+        m.as_result()?;
         let mut i = m.iter_init();
-        let metadata: Vec<::std::collections::HashMap<String, arg::Variant<Box<arg::RefArg>>>> = try!(i.read());
+        let metadata: Vec<::std::collections::HashMap<String, arg::Variant<Box<arg::RefArg + 'static>>>> = i.read()?;
         Ok(metadata)
     }
 
     fn add_track(&self, uri: &str, after_track: dbus::Path, set_as_current: bool) -> Result<(), Self::Err> {
-        let mut m = try!(self.method_call_with_args(&"org.mpris.MediaPlayer2.TrackList".into(), &"AddTrack".into(), |msg| {
+        let mut m = self.method_call_with_args(&"org.mpris.MediaPlayer2.TrackList".into(), &"AddTrack".into(), |msg| {
             let mut i = arg::IterAppend::new(msg);
             i.append(uri);
             i.append(after_track);
             i.append(set_as_current);
-        }));
-        try!(m.as_result());
+        })?;
+        m.as_result()?;
         Ok(())
     }
 
     fn remove_track(&self, track_id: dbus::Path) -> Result<(), Self::Err> {
-        let mut m = try!(self.method_call_with_args(&"org.mpris.MediaPlayer2.TrackList".into(), &"RemoveTrack".into(), |msg| {
+        let mut m = self.method_call_with_args(&"org.mpris.MediaPlayer2.TrackList".into(), &"RemoveTrack".into(), |msg| {
             let mut i = arg::IterAppend::new(msg);
             i.append(track_id);
-        }));
-        try!(m.as_result());
+        })?;
+        m.as_result()?;
         Ok(())
     }
 
     fn go_to(&self, track_id: dbus::Path) -> Result<(), Self::Err> {
-        let mut m = try!(self.method_call_with_args(&"org.mpris.MediaPlayer2.TrackList".into(), &"GoTo".into(), |msg| {
+        let mut m = self.method_call_with_args(&"org.mpris.MediaPlayer2.TrackList".into(), &"GoTo".into(), |msg| {
             let mut i = arg::IterAppend::new(msg);
             i.append(track_id);
-        }));
-        try!(m.as_result());
+        })?;
+        m.as_result()?;
         Ok(())
     }
 
@@ -72,6 +72,7 @@ where
     D: tree::DataType,
     D::Method: Default,
     D::Property: Default,
+    D::Signal: Default,
     T: OrgMprisMediaPlayer2TrackList<Err=tree::MethodErr>,
     F: 'static + for <'z> Fn(& 'z tree::MethodInfo<tree::MTFn<D>, D>) -> & 'z T,
 {
@@ -80,9 +81,9 @@ where
     let fclone = f.clone();
     let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
         let mut i = minfo.msg.iter_init();
-        let track_ids: Vec<dbus::Path> = try!(i.read());
+        let track_ids: Vec<dbus::Path> = i.read()?;
         let d = fclone(minfo);
-        let metadata = try!(d.get_tracks_metadata(track_ids));
+        let metadata = d.get_tracks_metadata(track_ids)?;
         let rm = minfo.msg.method_return();
         let rm = rm.append1(metadata);
         Ok(vec!(rm))
@@ -95,11 +96,11 @@ where
     let fclone = f.clone();
     let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
         let mut i = minfo.msg.iter_init();
-        let uri: &str = try!(i.read());
-        let after_track: dbus::Path = try!(i.read());
-        let set_as_current: bool = try!(i.read());
+        let uri: &str = i.read()?;
+        let after_track: dbus::Path = i.read()?;
+        let set_as_current: bool = i.read()?;
         let d = fclone(minfo);
-        try!(d.add_track(uri, after_track, set_as_current));
+        d.add_track(uri, after_track, set_as_current)?;
         let rm = minfo.msg.method_return();
         Ok(vec!(rm))
     };
@@ -112,9 +113,9 @@ where
     let fclone = f.clone();
     let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
         let mut i = minfo.msg.iter_init();
-        let track_id: dbus::Path = try!(i.read());
+        let track_id: dbus::Path = i.read()?;
         let d = fclone(minfo);
-        try!(d.remove_track(track_id));
+        d.remove_track(track_id)?;
         let rm = minfo.msg.method_return();
         Ok(vec!(rm))
     };
@@ -125,9 +126,9 @@ where
     let fclone = f.clone();
     let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
         let mut i = minfo.msg.iter_init();
-        let track_id: dbus::Path = try!(i.read());
+        let track_id: dbus::Path = i.read()?;
         let d = fclone(minfo);
-        try!(d.go_to(track_id));
+        d.go_to(track_id)?;
         let rm = minfo.msg.method_return();
         Ok(vec!(rm))
     };
@@ -141,7 +142,7 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_tracks()));
+        a.append(d.get_tracks()?);
         Ok(())
     });
     let i = i.add_p(p);
@@ -152,10 +153,25 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_can_edit_tracks()));
+        a.append(d.get_can_edit_tracks()?);
         Ok(())
     });
     let i = i.add_p(p);
+    let s = factory.signal("TrackListReplaced", Default::default());
+    let s = s.arg(("Tracks", "ao"));
+    let s = s.arg(("CurrentTrack", "o"));
+    let i = i.add_s(s);
+    let s = factory.signal("TrackAdded", Default::default());
+    let s = s.arg(("Metadata", "a{sv}"));
+    let s = s.arg(("AfterTrack", "o"));
+    let i = i.add_s(s);
+    let s = factory.signal("TrackRemoved", Default::default());
+    let s = s.arg(("TrackId", "o"));
+    let i = i.add_s(s);
+    let s = factory.signal("TrackMetadataChanged", Default::default());
+    let s = s.arg(("TrackId", "o"));
+    let s = s.arg(("Metadata", "a{sv}"));
+    let i = i.add_s(s);
     i
 }
 
@@ -169,19 +185,19 @@ impl dbus::SignalArgs for OrgMprisMediaPlayer2TrackListTrackListReplaced {
     const NAME: &'static str = "TrackListReplaced";
     const INTERFACE: &'static str = "org.mpris.MediaPlayer2.TrackList";
     fn append(&self, i: &mut arg::IterAppend) {
-        (&self.tracks as &arg::RefArg).append(i);
-        (&self.current_track as &arg::RefArg).append(i);
+        arg::RefArg::append(&self.tracks, i);
+        arg::RefArg::append(&self.current_track, i);
     }
     fn get(&mut self, i: &mut arg::Iter) -> Result<(), arg::TypeMismatchError> {
-        self.tracks = try!(i.read());
-        self.current_track = try!(i.read());
+        self.tracks = i.read()?;
+        self.current_track = i.read()?;
         Ok(())
     }
 }
 
 #[derive(Debug, Default)]
 pub struct OrgMprisMediaPlayer2TrackListTrackAdded {
-    pub metadata: ::std::collections::HashMap<String, arg::Variant<Box<arg::RefArg>>>,
+    pub metadata: ::std::collections::HashMap<String, arg::Variant<Box<arg::RefArg + 'static>>>,
     pub after_track: dbus::Path<'static>,
 }
 
@@ -189,12 +205,12 @@ impl dbus::SignalArgs for OrgMprisMediaPlayer2TrackListTrackAdded {
     const NAME: &'static str = "TrackAdded";
     const INTERFACE: &'static str = "org.mpris.MediaPlayer2.TrackList";
     fn append(&self, i: &mut arg::IterAppend) {
-        (&self.metadata as &arg::RefArg).append(i);
-        (&self.after_track as &arg::RefArg).append(i);
+        arg::RefArg::append(&self.metadata, i);
+        arg::RefArg::append(&self.after_track, i);
     }
     fn get(&mut self, i: &mut arg::Iter) -> Result<(), arg::TypeMismatchError> {
-        self.metadata = try!(i.read());
-        self.after_track = try!(i.read());
+        self.metadata = i.read()?;
+        self.after_track = i.read()?;
         Ok(())
     }
 }
@@ -208,10 +224,10 @@ impl dbus::SignalArgs for OrgMprisMediaPlayer2TrackListTrackRemoved {
     const NAME: &'static str = "TrackRemoved";
     const INTERFACE: &'static str = "org.mpris.MediaPlayer2.TrackList";
     fn append(&self, i: &mut arg::IterAppend) {
-        (&self.track_id as &arg::RefArg).append(i);
+        arg::RefArg::append(&self.track_id, i);
     }
     fn get(&mut self, i: &mut arg::Iter) -> Result<(), arg::TypeMismatchError> {
-        self.track_id = try!(i.read());
+        self.track_id = i.read()?;
         Ok(())
     }
 }
@@ -219,19 +235,19 @@ impl dbus::SignalArgs for OrgMprisMediaPlayer2TrackListTrackRemoved {
 #[derive(Debug, Default)]
 pub struct OrgMprisMediaPlayer2TrackListTrackMetadataChanged {
     pub track_id: dbus::Path<'static>,
-    pub metadata: ::std::collections::HashMap<String, arg::Variant<Box<arg::RefArg>>>,
+    pub metadata: ::std::collections::HashMap<String, arg::Variant<Box<arg::RefArg + 'static>>>,
 }
 
 impl dbus::SignalArgs for OrgMprisMediaPlayer2TrackListTrackMetadataChanged {
     const NAME: &'static str = "TrackMetadataChanged";
     const INTERFACE: &'static str = "org.mpris.MediaPlayer2.TrackList";
     fn append(&self, i: &mut arg::IterAppend) {
-        (&self.track_id as &arg::RefArg).append(i);
-        (&self.metadata as &arg::RefArg).append(i);
+        arg::RefArg::append(&self.track_id, i);
+        arg::RefArg::append(&self.metadata, i);
     }
     fn get(&mut self, i: &mut arg::Iter) -> Result<(), arg::TypeMismatchError> {
-        self.track_id = try!(i.read());
-        self.metadata = try!(i.read());
+        self.track_id = i.read()?;
+        self.metadata = i.read()?;
         Ok(())
     }
 }

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-set -e
-
 path_to_executable=$(which dbus-codegen-rust)
-if [ ! -x "$path_to_executable" ] ; then
+if [ ! -x "$path_to_executable" ]; then
     cargo install dbus-codegen
 fi
+
+set -e
 
 MPRIS_SPEC="mpris-spec/spec"
 SOURCE_LOCATION="../src/mpris"

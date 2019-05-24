@@ -1,9 +1,6 @@
-#![feature(duration_as_u128)]
-
 extern crate dbusify;
 extern crate rspotify;
 extern crate dbus;
-extern crate dbusify;
 
 mod integration_tests_utils;
 
@@ -22,7 +19,6 @@ use dbus::ConnPath;
 use dbusify::mpris::playlists::OrgMprisMediaPlayer2Playlists;
 use std::time::Duration;
 use rspotify::spotify::model::offset::for_position;
-use dbusify_hyper::get_token_hyper;
 use integration_tests_utils::run_test_type;
 use dbusify::AccountType;
 

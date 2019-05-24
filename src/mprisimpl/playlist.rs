@@ -58,7 +58,7 @@ impl mpris::playlists::OrgMprisMediaPlayer2Playlists for () {
         let playlist = playlist_id.to_string()[start.len()..].to_string();
         let uri = "spotify:playlist:".to_string() + &playlist;
 
-        get_spotify().playlist(&playlist, None)
+        get_spotify().playlist(&playlist, None, None)
             .and_then(|playlist| get_spotify().start_playback(None, Some(playlist.uri), None, None))
             .map_err(|err| MethodErr::failed(&err.to_string()))
 
@@ -148,7 +148,7 @@ impl mpris::playlists::OrgMprisMediaPlayer2Playlists for () {
                                     // https://developer.spotify.com/community/news/2018/06/12/changes-to-playlist-uris/
                                     let id = (d[4]).to_string();
 
-                                    get_spotify().playlist(&id, None)
+                                    get_spotify().playlist(&id, None, None)
                                         .map_err(|err| MethodErr::failed(&err.to_string()))
                                         .map(|playlist| {
                                             let dbus_path = "/org/mpris/MediaPlayer2/Playlist/".to_string() + &id.to_string();

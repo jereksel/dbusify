@@ -25,16 +25,16 @@ impl<'a, C: ::std::ops::Deref<Target=dbus::Connection>> OrgMprisMediaPlayer2 for
     type Err = dbus::Error;
 
     fn raise(&self) -> Result<(), Self::Err> {
-        let mut m = try!(self.method_call_with_args(&"org.mpris.MediaPlayer2".into(), &"Raise".into(), |_| {
-        }));
-        try!(m.as_result());
+        let mut m = self.method_call_with_args(&"org.mpris.MediaPlayer2".into(), &"Raise".into(), |_| {
+        })?;
+        m.as_result()?;
         Ok(())
     }
 
     fn quit(&self) -> Result<(), Self::Err> {
-        let mut m = try!(self.method_call_with_args(&"org.mpris.MediaPlayer2".into(), &"Quit".into(), |_| {
-        }));
-        try!(m.as_result());
+        let mut m = self.method_call_with_args(&"org.mpris.MediaPlayer2".into(), &"Quit".into(), |_| {
+        })?;
+        m.as_result()?;
         Ok(())
     }
 
@@ -92,7 +92,7 @@ where
     let fclone = f.clone();
     let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
         let d = fclone(minfo);
-        try!(d.raise());
+        d.raise()?;
         let rm = minfo.msg.method_return();
         Ok(vec!(rm))
     };
@@ -102,7 +102,7 @@ where
     let fclone = f.clone();
     let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
         let d = fclone(minfo);
-        try!(d.quit());
+        d.quit()?;
         let rm = minfo.msg.method_return();
         Ok(vec!(rm))
     };
@@ -115,7 +115,7 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_can_quit()));
+        a.append(d.get_can_quit()?);
         Ok(())
     });
     let i = i.add_p(p);
@@ -126,14 +126,14 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_fullscreen()));
+        a.append(d.get_fullscreen()?);
         Ok(())
     });
     let fclone = f.clone();
     let p = p.on_set(move |iter, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        try!(d.set_fullscreen(try!(iter.read())));
+        d.set_fullscreen(iter.read()?)?;
         Ok(())
     });
     let i = i.add_p(p);
@@ -144,7 +144,7 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_can_set_fullscreen()));
+        a.append(d.get_can_set_fullscreen()?);
         Ok(())
     });
     let i = i.add_p(p);
@@ -155,7 +155,7 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_can_raise()));
+        a.append(d.get_can_raise()?);
         Ok(())
     });
     let i = i.add_p(p);
@@ -166,7 +166,7 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_has_track_list()));
+        a.append(d.get_has_track_list()?);
         Ok(())
     });
     let i = i.add_p(p);
@@ -177,7 +177,7 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_identity()));
+        a.append(d.get_identity()?);
         Ok(())
     });
     let i = i.add_p(p);
@@ -188,7 +188,7 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_desktop_entry()));
+        a.append(d.get_desktop_entry()?);
         Ok(())
     });
     let i = i.add_p(p);
@@ -199,7 +199,7 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_supported_uri_schemes()));
+        a.append(d.get_supported_uri_schemes()?);
         Ok(())
     });
     let i = i.add_p(p);
@@ -210,7 +210,7 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_supported_mime_types()));
+        a.append(d.get_supported_mime_types()?);
         Ok(())
     });
     let i = i.add_p(p);

@@ -18,25 +18,25 @@ impl<'a, C: ::std::ops::Deref<Target=dbus::Connection>> OrgMprisMediaPlayer2Play
     type Err = dbus::Error;
 
     fn activate_playlist(&self, playlist_id: dbus::Path) -> Result<(), Self::Err> {
-        let mut m = try!(self.method_call_with_args(&"org.mpris.MediaPlayer2.Playlists".into(), &"ActivatePlaylist".into(), |msg| {
+        let mut m = self.method_call_with_args(&"org.mpris.MediaPlayer2.Playlists".into(), &"ActivatePlaylist".into(), |msg| {
             let mut i = arg::IterAppend::new(msg);
             i.append(playlist_id);
-        }));
-        try!(m.as_result());
+        })?;
+        m.as_result()?;
         Ok(())
     }
 
     fn get_playlists(&self, index: u32, max_count: u32, order: &str, reverse_order: bool) -> Result<Vec<(dbus::Path<'static>, String, String)>, Self::Err> {
-        let mut m = try!(self.method_call_with_args(&"org.mpris.MediaPlayer2.Playlists".into(), &"GetPlaylists".into(), |msg| {
+        let mut m = self.method_call_with_args(&"org.mpris.MediaPlayer2.Playlists".into(), &"GetPlaylists".into(), |msg| {
             let mut i = arg::IterAppend::new(msg);
             i.append(index);
             i.append(max_count);
             i.append(order);
             i.append(reverse_order);
-        }));
-        try!(m.as_result());
+        })?;
+        m.as_result()?;
         let mut i = m.iter_init();
-        let playlists: Vec<(dbus::Path<'static>, String, String)> = try!(i.read());
+        let playlists: Vec<(dbus::Path<'static>, String, String)> = i.read()?;
         Ok(playlists)
     }
 
@@ -58,6 +58,7 @@ where
     D: tree::DataType,
     D::Method: Default,
     D::Property: Default,
+    D::Signal: Default,
     T: OrgMprisMediaPlayer2Playlists<Err=tree::MethodErr>,
     F: 'static + for <'z> Fn(& 'z tree::MethodInfo<tree::MTFn<D>, D>) -> & 'z T,
 {
@@ -66,9 +67,9 @@ where
     let fclone = f.clone();
     let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
         let mut i = minfo.msg.iter_init();
-        let playlist_id: dbus::Path = try!(i.read());
+        let playlist_id: dbus::Path = i.read()?;
         let d = fclone(minfo);
-        try!(d.activate_playlist(playlist_id));
+        d.activate_playlist(playlist_id)?;
         let rm = minfo.msg.method_return();
         Ok(vec!(rm))
     };
@@ -79,12 +80,12 @@ where
     let fclone = f.clone();
     let h = move |minfo: &tree::MethodInfo<tree::MTFn<D>, D>| {
         let mut i = minfo.msg.iter_init();
-        let index: u32 = try!(i.read());
-        let max_count: u32 = try!(i.read());
-        let order: &str = try!(i.read());
-        let reverse_order: bool = try!(i.read());
+        let index: u32 = i.read()?;
+        let max_count: u32 = i.read()?;
+        let order: &str = i.read()?;
+        let reverse_order: bool = i.read()?;
         let d = fclone(minfo);
-        let playlists = try!(d.get_playlists(index, max_count, order, reverse_order));
+        let playlists = d.get_playlists(index, max_count, order, reverse_order)?;
         let rm = minfo.msg.method_return();
         let rm = rm.append1(playlists);
         Ok(vec!(rm))
@@ -103,7 +104,7 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_playlist_count()));
+        a.append(d.get_playlist_count()?);
         Ok(())
     });
     let i = i.add_p(p);
@@ -114,7 +115,7 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_orderings()));
+        a.append(d.get_orderings()?);
         Ok(())
     });
     let i = i.add_p(p);
@@ -125,10 +126,13 @@ where
     let p = p.on_get(move |a, pinfo| {
         let minfo = pinfo.to_method_info();
         let d = fclone(&minfo);
-        a.append(try!(d.get_active_playlist()));
+        a.append(d.get_active_playlist()?);
         Ok(())
     });
     let i = i.add_p(p);
+    let s = factory.signal("PlaylistChanged", Default::default());
+    let s = s.arg(("Playlist", "(oss)"));
+    let i = i.add_s(s);
     i
 }
 
@@ -141,10 +145,10 @@ impl dbus::SignalArgs for OrgMprisMediaPlayer2PlaylistsPlaylistChanged {
     const NAME: &'static str = "PlaylistChanged";
     const INTERFACE: &'static str = "org.mpris.MediaPlayer2.Playlists";
     fn append(&self, i: &mut arg::IterAppend) {
-        (&self.playlist as &arg::RefArg).append(i);
+        arg::RefArg::append(&self.playlist, i);
     }
     fn get(&mut self, i: &mut arg::Iter) -> Result<(), arg::TypeMismatchError> {
-        self.playlist = try!(i.read());
+        self.playlist = i.read()?;
         Ok(())
     }
 }

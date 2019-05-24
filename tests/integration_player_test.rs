@@ -1,5 +1,3 @@
-#![feature(duration_as_u128)]
-
 extern crate dbusify;
 extern crate rspotify;
 extern crate dbus;

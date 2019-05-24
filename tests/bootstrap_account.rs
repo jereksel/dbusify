@@ -8,7 +8,6 @@ use std::path::PathBuf;
 use rspotify::spotify::oauth2::SpotifyOAuth;
 use rspotify::spotify::oauth2::SpotifyClientCredentials;
 use rspotify::spotify::client::Spotify;
-use dbusify_hyper::get_token_hyper;
 use integration_tests_utils::run_test_type;
 use dbus::ConnPath;
 use dbusify::AccountType;
